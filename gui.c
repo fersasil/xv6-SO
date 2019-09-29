@@ -4,7 +4,7 @@
 
 int main(){
     printf(1, "Ola mundo\n");
-    fork(30);
+    fork(50);
 
 
     exit();

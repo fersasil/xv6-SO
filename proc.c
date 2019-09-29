@@ -180,6 +180,7 @@ growproc(int n)
 int
 fork(int tickets)
 {
+  cprintf("\n\n========\nTickets: %d\n=========\n", tickets);
   int i, pid;
   struct proc *np;
   struct proc *curproc = myproc();
@@ -218,7 +219,7 @@ fork(int tickets)
 
   release(&ptable.lock);
 
-  cprintf("%d\n", tickets);
+  cprintf("(%d) %s %d\n", np->pid, np->name, tickets);
 
   return pid;
 }
