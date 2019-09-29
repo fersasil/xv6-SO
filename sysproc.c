@@ -6,11 +6,12 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "lottery_scheduler.h"
 
 int
 sys_fork(void)
 {
-  return fork();
+  return fork(MIN_TICKETS);
 }
 
 int
