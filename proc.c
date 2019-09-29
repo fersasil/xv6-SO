@@ -20,6 +20,41 @@ extern void trapret(void);
 
 static void wakeup1(void *chan);
 
+int number_tickets = 0;
+
+// random functions
+
+static
+unsigned long
+lcg_rand(unsigned long seed)
+{
+	return (seed * 279470273UL) % 4294967291UL;
+}
+
+unsigned 
+long
+g_rand()
+{
+	static int seed = 0;
+	unsigned int random_number;
+	
+	random_number = lcg_rand(seed) % number_tickets;
+	seed++;
+
+	return random_number;
+}
+
+unsigned
+int 
+random_ticket()
+{
+	return !number_tickets ? 0 : g_rand() % number_tickets;
+}
+
+
+
+// end 
+
 void
 pinit(void)
 {
@@ -180,7 +215,6 @@ growproc(int n)
 int
 fork(int tickets)
 {
-  cprintf("\n\n========\nTickets: %d\n=========\n", tickets);
   int i, pid;
   struct proc *np;
   struct proc *curproc = myproc();
@@ -217,9 +251,16 @@ fork(int tickets)
 
   np->state = RUNNABLE;
 
+  //adiciona o intervalo dos tickets ao processo
+  np->init_ticket = number_tickets;
+  np->final_ticket = number_tickets + tickets;
+
+
   release(&ptable.lock);
 
-  cprintf("(%d) %s %d\n", np->pid, np->name, tickets);
+  //cprintf("(%d) %s %d\n", np->pid, np->name, tickets);
+  // atualiza o número total de tickets
+  number_tickets += tickets;
 
   return pid;
 }
