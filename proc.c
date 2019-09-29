@@ -6,6 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "lottery_scheduler.h"
 
 struct {
   struct spinlock lock;
@@ -24,8 +25,8 @@ int number_tickets = 0;
 
 // random functions
 
-static
-unsigned long
+unsigned 
+long
 lcg_rand(unsigned long seed)
 {
 	return (seed * 279470273UL) % 4294967291UL;
@@ -184,6 +185,13 @@ userinit(void)
   acquire(&ptable.lock);
 
   p->state = RUNNABLE;
+
+  // first process must have it's own tickets
+  p->init_ticket = number_tickets;
+  p->final_ticket = MIN_TICKETS + number_tickets;
+
+  // atualizar o total de tickets
+  number_tickets += MIN_TICKETS;
 
   release(&ptable.lock);
 }
@@ -369,6 +377,7 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
+  int lucky_ticket;
   
   for(;;){
     // Enable interrupts on this processor.
@@ -376,13 +385,21 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
+
+    lucky_ticket = random_ticket();
+
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(!(lucky_ticket >= p->init_ticket && lucky_ticket < p->final_ticket))
+        continue;
       if(p->state != RUNNABLE)
         continue;
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
+
+      if(p->pid > 2) cprintf("\nPROCESS %d HAS CPU\n", p->pid);
+
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
