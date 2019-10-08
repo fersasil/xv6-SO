@@ -14,7 +14,7 @@ sys_fork(void)
   //Get tickets passed using fork in users function
   int tickets;
   argint(0, &tickets);
-
+  
   return tickets > 0 ? fork(tickets) : fork(MIN_TICKETS);
 }
 

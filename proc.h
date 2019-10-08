@@ -51,6 +51,7 @@ struct proc {
   char name[16];               // Process name (debugging)
   int init_ticket;              // intervalo de inicio do ticket. Inclusive
   int final_ticket;            // intervalo de termino. exclusive
+  int counter;                 // Numero de vezes que pegou a cpu
 };
 
 // Process memory is laid out contiguously, low addresses first:

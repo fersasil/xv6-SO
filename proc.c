@@ -49,7 +49,7 @@ unsigned
 int 
 random_ticket()
 {
-	return !number_tickets ? 0 : g_rand() % number_tickets;
+	return !number_tickets ? 0 : g_rand() % number_tickets + 1;
 }
 
 
@@ -259,10 +259,11 @@ fork(int tickets)
 
   np->state = RUNNABLE;
 
+
   //adiciona o intervalo dos tickets ao processo
   np->init_ticket = number_tickets;
   np->final_ticket = number_tickets + tickets;
-
+  np->counter = 0;
 
   release(&ptable.lock);
 
@@ -369,7 +370,7 @@ wait(void)
 // Scheduler never returns.  It loops, doing:
 //  - choose a process to run
 //  - swtch to start running that process
-//  - eventually that process transfers control
+//  - eventually that process traers control
 //      via swtch back to the scheduler.
 void
 scheduler(void)
@@ -397,12 +398,14 @@ scheduler(void)
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
-
-      if(p->pid > 2) cprintf("\nPROCESS %d HAS CPU\n", p->pid);
+      p->counter++;
+      
+      // if(p->pid > 2) cprintf("\nPROCESS %d HAS CPU p->counter: %d\n", p->pid, p->counter);
 
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
+      
 
       swtch(&(c->scheduler), p->context);
       switchkvm();
@@ -584,7 +587,7 @@ procdump(void)
       state = states[p->state];
     else
       state = "???";
-    cprintf("%d %s %s", p->pid, state, p->name);
+    cprintf("%d %s %s TICKETS: %d COUNTER: %d", p->pid, state, p->name, p->final_ticket - p->init_ticket, p->counter);
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)

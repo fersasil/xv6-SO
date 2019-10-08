@@ -2,45 +2,51 @@
 #include "stat.h"
 #include "user.h"
 
-volatile void take_time(){
-    // volatile int l;
-    // unsigned long long int gui = 0;
-    // gui++;
-    
-    // for(int i = 0; i < 1000000; i++)
-    //     for(int j = 0; j < 100000; j++)
-    //         gui++;
-    
-    // printf(1, "fim %d\n", gui);
+#define N  5
 
-    // sleep(500);
-    sleep(1000);
-    printf(1, "ok\n");
+void
+forktest(void)
+{
+  int n, pid;
 
+  printf(1, "fork test\n");
+
+  for(n=0; n<N; n++){
+    if(n == 0)
+      pid = fork(50); // Primeiro processo ganha 50 tickets
+    else{
+      pid = fork(10); // Os outros ganham 10 tickets!
+    }
+    if(pid < 0)
+      break;
+    if(pid == 0)
+      for(; ; ); // Loop infinito
+  }
+
+  if(n == N){
+    printf(1, "fork claimed to work %d times!\n", N);
+    exit();
+  }
+
+  for(; n > 0; n--){
+    if(wait() < 0){
+      printf(1, "wait stopped early\n");
+      exit();
+    }
+  }
+
+  if(wait() != -1){
+    printf(1, "wait got too many\n");
+    exit();
+  }
+
+  printf(1, "fork test OK\n");
+  exit();
 }
 
-int main(){
-    int i;
-    printf(1, "Ola mundo\n");
-    
-    for(i = 0; i < 5; i++){
-        int pid = fork(50);
-        if(pid > 0){
-        //É o filho!
-            
-            printf(1, "Eu sou o filho!\n");
-
-            take_time();
-            
-            wait();
-        }
-        else if(pid == 0){
-            exit(); //É o pai
-        }
-    }
-
-    
-
-
-    exit();
+int
+main(void)
+{
+  forktest();
+  exit();
 }
