@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "spinlock.h": "c",
+        "stride_scheduler.h": "c",
+        "fcntl.h": "c"
+    }
+}

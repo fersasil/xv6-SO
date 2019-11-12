@@ -8,6 +8,7 @@
 #include "spinlock.h"
 #include "stride_scheduler.h"
 
+
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -20,6 +21,7 @@ extern void forkret(void);
 extern void trapret(void);
 
 static void wakeup1(void *chan);
+
 
 void
 pinit(void)
@@ -151,6 +153,13 @@ userinit(void)
 
   p->state = RUNNABLE;
 
+  // first process must HAVE ITS OWN TICKETS
+  p->stride = PASS_CONSTANT/MIN_TICKETS;
+  p->tickets = MIN_TICKETS;
+  p->pass = 0;
+
+  // atualizar o total de tickets
+
   release(&ptable.lock);
 }
 
@@ -216,12 +225,12 @@ fork(int tickets)
   acquire(&ptable.lock);
 
   np->state = RUNNABLE;
-  np->stride = 0;
-  np->pass = PASS_CONSTANT / tickets;
-  np->tickets = tickets;
-  int teste = PASS_CONSTANT / tickets;
-  cprintf("%d\n", teste);
 
+  //Adiciona os campos do scheduler
+  np->tickets = tickets;
+  np->pass = 0;
+  np->counter = 0;
+  np->stride = PASS_CONSTANT/tickets;
 
   release(&ptable.lock);
 
@@ -324,12 +333,15 @@ wait(void)
 // Scheduler never returns.  It loops, doing:
 //  - choose a process to run
 //  - swtch to start running that process
-//  - eventually that process transfers control
+//  - eventually that process traers control
 //      via swtch back to the scheduler.
 void
 scheduler(void)
 {
   struct proc *p;
+  struct proc *auxSmallerP;
+  unsigned long long int smallerPass;
+
   struct cpu *c = mycpu();
   c->proc = 0;
   
@@ -339,26 +351,36 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+
+    //Caso o primeiro processo seja o menor
+    auxSmallerP = ptable.proc;
+
+    //Iterar pelo vetor e achar o menor passo!
+    for(p = ptable.proc, smallerPass = AUX_MAXIMUM_LLI; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
 
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
-
-      swtch(&(c->scheduler), p->context);
-      switchkvm();
-
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
-      c->proc = 0;
+      if(smallerPass >= p->pass){
+        smallerPass = p->pass;
+        auxSmallerP = p;
+      }
     }
-    release(&ptable.lock);
 
+    //O menor passo ganha a cpu!
+
+    p = auxSmallerP;
+    p->counter++;
+    p->pass += p->stride;
+    c->proc = p;
+    switchuvm(p);
+    p->state = RUNNING;
+    
+    swtch(&(c->scheduler), p->context);
+    switchkvm();
+
+    c->proc = 0;
+    
+    release(&ptable.lock);
   }
 }
 
@@ -518,10 +540,11 @@ procdump(void)
   [RUNNING]   "run   ",
   [ZOMBIE]    "zombie"
   };
-  // int i;
+
   struct proc *p;
   char *state;
-  // uint pc[10];
+
+  cprintf("\n------Processos em execução-----");
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->state == UNUSED)
@@ -530,19 +553,9 @@ procdump(void)
       state = states[p->state];
     else
       state = "???";
-    
-    if(p->state != SLEEPING ){
-      cprintf("\n%d %s %s ", p->pid, state, p->name);
-      cprintf("TICKETS: %d ", p->tickets);
-      cprintf("STRIDE: %d ", p->stride);
-      cprintf("PASS: %d\n", p->pass);
-    }
+    if(p->state == RUNNABLE || p->state == RUNNING)
+      cprintf("%d %s %s TICKETS: %d COUNTER: %d PASS %d STRIDE %d", p->pid, state, p->name, p->tickets, p->counter, p->pass, p->stride);
 
-    // if(p->state == SLEEPING){
-    //   getcallerpcs((uint*)p->context->ebp+2, pc);
-    //   for(i=0; i<10 && pc[i] != 0; i++)
-    //     cprintf(" %p", pc[i]);
-    // }
     cprintf("\n");
   }
 }

@@ -22,7 +22,7 @@ main(void)
 
   for(;;){
     printf(1, "init: starting sh\n");
-    pid = fork(TICKETS_DEFAULT);
+    pid = fork(MIN_TICKETS);
     if(pid < 0){
       printf(1, "init: fork failed\n");
       exit();

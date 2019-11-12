@@ -25,7 +25,7 @@ main(int argc, char *argv[])
   memset(data, 'a', sizeof(data));
 
   for(i = 0; i < 4; i++)
-    if(fork(TICKETS_DEFAULT) > 0)
+    if(fork(MIN_TICKETS) > 0)
       break;
 
   printf(1, "write %d\n", i);

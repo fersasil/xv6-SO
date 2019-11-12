@@ -184,7 +184,7 @@ fork1(void)
 {
   int pid;
 
-  pid = fork(TICKETS_DEFAULT);
+  pid = fork(MIN_TICKETS);
   if(pid == -1)
     panic("fork");
   return pid;

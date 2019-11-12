@@ -11,9 +11,11 @@
 int
 sys_fork(void)
 {
-  int tickets = argint(0, &tickets);
-
-  return tickets ? fork(tickets) : fork(TICKETS_DEFAULT);
+  //Get tickets passed using fork in users function
+  int tickets;
+  argint(0, &tickets);
+  
+  return tickets > 0 ? fork(tickets) : fork(MIN_TICKETS);
 }
 
 int

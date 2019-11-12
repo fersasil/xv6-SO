@@ -9,7 +9,7 @@
 int
 main(void)
 {
-  if(fork(TICKETS_DEFAULT) > 0)
+  if(fork(MIN_TICKETS) > 0)
     sleep(5);  // Let child exit before parent.
   exit();
 }

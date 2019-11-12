@@ -47,7 +47,7 @@ exitiputtest(void)
 
   printf(stdout, "exitiput test\n");
 
-  pid = fork(TICKETS_DEFAULT);
+  pid = fork(MIN_TICKETS);
   if(pid < 0){
     printf(stdout, "fork failed\n");
     exit();
@@ -92,7 +92,7 @@ openiputtest(void)
     printf(stdout, "mkdir oidir failed\n");
     exit();
   }
-  pid = fork(TICKETS_DEFAULT);
+  pid = fork(MIN_TICKETS);
   if(pid < 0){
     printf(stdout, "fork failed\n");
     exit();
@@ -313,7 +313,7 @@ pipe1(void)
     printf(1, "pipe() failed\n");
     exit();
   }
-  pid = fork(TICKETS_DEFAULT);
+  pid = fork(MIN_TICKETS);
   seq = 0;
   if(pid == 0){
     close(fds[0]);
@@ -349,7 +349,7 @@ pipe1(void)
     close(fds[0]);
     wait();
   } else {
-    printf(1, "fork() failed\n");
+    printf(1, "fork(MIN_TICKETS) failed\n");
     exit();
   }
   printf(1, "pipe1 ok\n");
@@ -363,18 +363,18 @@ preempt(void)
   int pfds[2];
 
   printf(1, "preempt: ");
-  pid1 = fork(TICKETS_DEFAULT);
+  pid1 = fork(MIN_TICKETS);
   if(pid1 == 0)
     for(;;)
       ;
 
-  pid2 = fork(TICKETS_DEFAULT);
+  pid2 = fork(MIN_TICKETS);
   if(pid2 == 0)
     for(;;)
       ;
 
   pipe(pfds);
-  pid3 = fork(TICKETS_DEFAULT);
+  pid3 = fork(MIN_TICKETS);
   if(pid3 == 0){
     close(pfds[0]);
     if(write(pfds[1], "x", 1) != 1)
@@ -408,7 +408,7 @@ exitwait(void)
   int i, pid;
 
   for(i = 0; i < 100; i++){
-    pid = fork(TICKETS_DEFAULT);
+    pid = fork(MIN_TICKETS);
     if(pid < 0){
       printf(1, "fork failed\n");
       return;
@@ -433,7 +433,7 @@ mem(void)
 
   printf(1, "mem test\n");
   ppid = getpid();
-  if((pid = fork(TICKETS_DEFAULT)) == 0){
+  if((pid = fork(MIN_TICKETS)) == 0){
     m1 = 0;
     while((m2 = malloc(10001)) != 0){
       *(char**)m2 = m1;
@@ -476,7 +476,7 @@ sharedfd(void)
     printf(1, "fstests: cannot open sharedfd for writing");
     return;
   }
-  pid = fork(TICKETS_DEFAULT);
+  pid = fork(MIN_TICKETS);
   memset(buf, pid==0?'c':'p', sizeof(buf));
   for(i = 0; i < 1000; i++){
     if(write(fd, buf, sizeof(buf)) != sizeof(buf)){
@@ -528,7 +528,7 @@ fourfiles(void)
     fname = names[pi];
     unlink(fname);
 
-    pid = fork(TICKETS_DEFAULT);
+    pid = fork(MIN_TICKETS);
     if(pid < 0){
       printf(1, "fork failed\n");
       exit();
@@ -591,7 +591,7 @@ createdelete(void)
   printf(1, "createdelete test\n");
 
   for(pi = 0; pi < 4; pi++){
-    pid = fork(TICKETS_DEFAULT);
+    pid = fork(MIN_TICKETS);
     if(pid < 0){
       printf(1, "fork failed\n");
       exit();
@@ -779,7 +779,7 @@ concreate(void)
   for(i = 0; i < 40; i++){
     file[1] = '0' + i;
     unlink(file);
-    pid = fork(TICKETS_DEFAULT);
+    pid = fork(MIN_TICKETS);
     if(pid && (i % 3) == 1){
       link("C0", file);
     } else if(pid == 0 && (i % 5) == 1){
@@ -827,7 +827,7 @@ concreate(void)
 
   for(i = 0; i < 40; i++){
     file[1] = '0' + i;
-    pid = fork(TICKETS_DEFAULT);
+    pid = fork(MIN_TICKETS);
     if(pid < 0){
       printf(1, "fork failed\n");
       exit();
@@ -863,7 +863,7 @@ linkunlink()
   printf(1, "linkunlink test\n");
 
   unlink("x");
-  pid = fork(TICKETS_DEFAULT);
+  pid = fork(MIN_TICKETS);
   if(pid < 0){
     printf(1, "fork failed\n");
     exit();
@@ -1385,7 +1385,7 @@ forktest(void)
   printf(1, "fork test\n");
 
   for(n=0; n<1000; n++){
-    pid = fork(TICKETS_DEFAULT);
+    pid = fork(MIN_TICKETS);
     if(pid < 0)
       break;
     if(pid == 0)
@@ -1434,7 +1434,7 @@ sbrktest(void)
     *b = 1;
     a = b + 1;
   }
-  pid = fork(TICKETS_DEFAULT);
+  pid = fork(MIN_TICKETS);
   if(pid < 0){
     printf(stdout, "sbrk test fork failed\n");
     exit();
@@ -1497,7 +1497,7 @@ sbrktest(void)
   // can we read the kernel's memory?
   for(a = (char*)(KERNBASE); a < (char*) (KERNBASE+2000000); a += 50000){
     ppid = getpid();
-    pid = fork(TICKETS_DEFAULT);
+    pid = fork(MIN_TICKETS);
     if(pid < 0){
       printf(stdout, "fork failed\n");
       exit();
@@ -1517,7 +1517,7 @@ sbrktest(void)
     exit();
   }
   for(i = 0; i < sizeof(pids)/sizeof(pids[0]); i++){
-    if((pids[i] = fork(TICKETS_DEFAULT)) == 0){
+    if((pids[i] = fork(MIN_TICKETS)) == 0){
       // allocate a lot of memory
       sbrk(BIG - (uint)sbrk(0));
       write(fds[1], "x", 1);
@@ -1570,7 +1570,7 @@ validatetest(void)
   hi = 1100*1024;
 
   for(p = 0; p <= (uint)hi; p += 4096){
-    if((pid = fork(TICKETS_DEFAULT)) == 0){
+    if((pid = fork(MIN_TICKETS)) == 0){
       // try to crash the kernel by passing in a badly placed integer
       validateint((int*)p);
       exit();
@@ -1616,7 +1616,7 @@ bigargtest(void)
   int pid, fd;
 
   unlink("bigarg-ok");
-  pid = fork(TICKETS_DEFAULT);
+  pid = fork(MIN_TICKETS);
   if(pid == 0){
     static char *args[MAXARG];
     int i;
@@ -1707,7 +1707,7 @@ uio()
   int pid;
 
   printf(1, "uio test\n");
-  pid = fork(TICKETS_DEFAULT);
+  pid = fork(MIN_TICKETS);
   if(pid == 0){
     port = RTC_ADDR;
     val = 0x09;  /* year */

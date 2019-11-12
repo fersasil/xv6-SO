@@ -23,10 +23,10 @@ forktest(void)
       for(; ; ); // Loop infinito
   }
 
-//   if(n == N){
-//     printf(1, "fork claimed to work %d times!\n", N);
-//     exit();
-//   }
+  // if(n == N){
+  //   printf(1, "fork claimed to work %d times!\n", N);
+  //   exit();
+  // }
 
   for(; n > 0; n--){
     if(wait() < 0){
