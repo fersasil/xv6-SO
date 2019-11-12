@@ -360,6 +360,9 @@ scheduler(void)
       if(p->state != RUNNABLE)
         continue;
 
+      //Em caso de todos forem iguais, o com maior pid sera pego
+      //ele estara no final do array de processos!
+      
       if(smallerPass >= p->pass){
         smallerPass = p->pass;
         auxSmallerP = p;

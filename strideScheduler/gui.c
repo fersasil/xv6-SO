@@ -9,9 +9,9 @@ forktest(void)
 {
   int n, pid;
 
-  printf(1, "fork test\n");
+  printf(1, "Teste iniciado, aperte ctrl + p\n");
 
-  for(n=0; n<N; n++){
+  for(n = 0; n < N; n++){
     if(n == 0)
       pid = fork(50); // Primeiro processo ganha 50 tickets
     else{
@@ -23,24 +23,7 @@ forktest(void)
       for(; ; ); // Loop infinito
   }
 
-  // if(n == N){
-  //   printf(1, "fork claimed to work %d times!\n", N);
-  //   exit();
-  // }
-
-  for(; n > 0; n--){
-    if(wait() < 0){
-      printf(1, "wait stopped early\n");
-      exit();
-    }
-  }
-
-  if(wait() != -1){
-    printf(1, "wait got too many\n");
-    exit();
-  }
-
-  printf(1, "fork test OK\n");
+  wait();
   exit();
 }
 
