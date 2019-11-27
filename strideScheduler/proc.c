@@ -356,7 +356,7 @@ scheduler(void)
     auxSmallerP = ptable.proc;
 
     //Iterar pelo vetor e achar o menor passo!
-    for(p = ptable.proc, smallerPass = AUX_MAXIMUM_LLI; p < &ptable.proc[NPROC]; p++){
+    for(p = ptable.proc, smallerPass = p->pass; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
 
